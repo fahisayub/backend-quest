@@ -7,10 +7,15 @@ const { authenticator } = require("../middlewares/authenticator");
 const multer = require("multer");
 const upload = multer({ dest: "uploads/" });
 const sharp = require("sharp");
+const user = require("../controller/userController")
 const path = require("path");
 const fs = require("fs");
+const { testFn } = require("../services/metamaskWalletValidator");
 require("dotenv").config();
 const cloudinary = require("cloudinary").v2;
+userRouter.use(express.json())
+userRouter.get('/test',testFn)
+userRouter.post("/metamaskAuth",user.metamaskAuth)
 
 userRouter.post("/register", upload.single("image"), async (req, res) => {
   const { email, password, image, role, totalq, points, name, contact } =
@@ -108,7 +113,7 @@ userRouter.post("/register", upload.single("image"), async (req, res) => {
   }
 });
 
-userRouter.use(express.json())
+
 userRouter.post("/login", async (req, res) => {
   let { email, password } = req.body;
   console.log("109",req.body)
