@@ -2,6 +2,7 @@ const { membersModel } = require("../models/membersModel");
 const { metamaskValidator } = require("../services/metamaskWalletValidator");
 require("dotenv").config();
 const jwt = require("jsonwebtoken");
+const { updatePointsByWalletAddress } = require("../services/userData");
 const metamaskAuth = async (req, res) => {
   try {
     const sign = req.body.signature;
@@ -61,7 +62,15 @@ const metamaskAuth = async (req, res) => {
     res.json(error);
   }
 };
+const addPointToUser = async (req,res)=> {
+  const token = req.headers.authorization;
+  const point = req.body.point;
+  const address = req.body.address;
+  const response = updatePointsByWalletAddress(address,point)
+  res.json(response);
+}
 
 module.exports = {
   metamaskAuth,
+  addPointToUser
 };

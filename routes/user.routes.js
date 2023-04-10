@@ -16,6 +16,7 @@ const cloudinary = require("cloudinary").v2;
 userRouter.use(express.json())
 userRouter.get('/test',testFn)
 userRouter.post("/metamaskAuth",user.metamaskAuth)
+userRouter.post('/addPoint',user.addPointToUser)
 
 userRouter.post("/register", upload.single("image"), async (req, res) => {
   const { email, password, image, role, totalq, points, name, contact } =

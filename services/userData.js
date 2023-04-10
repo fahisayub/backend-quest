@@ -20,7 +20,7 @@ async function updatePointsByWalletAddress(walletAddress, newPoints) {
       { $inc: { points: newPoints } },
       { new: true }
     )
-    return updatedMember
+    return "success"
   } catch (error) {
     console.error(error)
   }
