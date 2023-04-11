@@ -10,6 +10,9 @@ image:{type:String,required:true},
 contact:{type:String,required:true},
 totalq:{type:Number},
 points:{type:Number,default:00},
+questsJoined:[
+    {}
+]
 },{
     versionKey:false
 })
