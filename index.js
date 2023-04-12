@@ -5,7 +5,9 @@ const cors = require("cors")
 const { questRouter } = require("./routes/quest.routes")
 
 const app = express()
-app.use(cors())
+app.options("", cors({ origin: '', optionsSuccessStatus: 200 }));
+app.use(cors({ origin: "*", optionsSuccessStatus: 200 }));
+
 app.use("/user",userRouter)
 app.use(express.json())
 app.use("/quest",questRouter)

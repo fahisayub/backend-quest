@@ -1,6 +1,8 @@
 const express = require("express");
 const userRouter = express.Router();
 const bcrypt = require("bcrypt");
+const OAuth = require('oauth-1.0a');
+const CryptoJS = require('crypto-js');
 const { UserModel } = require("../models/UserModel");
 const jwt = require("jsonwebtoken");
 const { authenticator } = require("../middlewares/authenticator");
@@ -17,6 +19,51 @@ userRouter.use(express.json())
 userRouter.get('/test',testFn)
 userRouter.post("/metamaskAuth",user.metamaskAuth)
 userRouter.post('/addPoint',user.addPointToUser)
+const API_KEY = 'LuBXwVFRCfnZheQOoo5SKFG8m';
+const API_SECRET_KEY = '4zL3tsFF75FqZboED63CR2GGGVPDbyutnlFR5chD8hQmZSc2vV';
+
+const oauth = OAuth({
+  consumer: {
+    key: API_KEY,
+    secret: API_SECRET_KEY,
+  },
+  signature_method: 'HMAC-SHA1',
+  hash_function: (base_string, key) => {
+    const signature = CryptoJS.HmacSHA1(base_string, key).toString(CryptoJS.enc.Base64);
+    return signature;
+  },
+});
+
+userRouter.get('/twitter', async (req, res) => {
+  try {
+    const request_data = {
+      url: 'https://api.twitter.com/oauth/request_token',
+      method: 'POST',
+    };
+    const headers = oauth.toHeader(oauth.authorize(request_data));
+    headers['Content-Type'] = 'application/x-www-form-urlencoded';
+    const response = await fetch(request_data.url, {
+      method: request_data.method,
+      headers,
+      mode: 'cors',
+      cache: 'no-cache',
+      credentials: 'same-origin',
+    });
+    const text = await response.text();
+    const token = text
+      .split('&')
+      .find(str => str.startsWith('oauth_token='))
+      .split('=')[1];
+    const token_secret = text
+      .split('&')
+      .find(str => str.startsWith('oauth_token_secret='))
+      .split('=')[1];
+    res.send({ token, token_secret });
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Internal Server Error');
+  }
+});
 
 userRouter.post("/register", upload.single("image"), async (req, res) => {
   const { email, password, image, role, totalq, points, name, contact } =

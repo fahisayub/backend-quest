@@ -1,34 +1,60 @@
 const express = require('express');
-const request = require('request');
+const OAuth = require('oauth-1.0a');
+const CryptoJS = require('crypto-js');
+const cors = require("cors")
+
+
 const app = express();
+app.options("", cors({ origin: '', optionsSuccessStatus: 200 }));
+app.use(cors({ origin: "*", optionsSuccessStatus: 200 }));
 
-const consumerKey = 'G0JVZB5t3dF6plaSNEHGdz8RE';
-const consumerSecret = 'sibPFMeQ8JWCogWa1VRmaxkX5w2wzxgQkf9exg2dyGByR6DFK8';
+const API_KEY = 'LuBXwVFRCfnZheQOoo5SKFG8m';
+const API_SECRET_KEY = '4zL3tsFF75FqZboED63CR2GGGVPDbyutnlFR5chD8hQmZSc2vV';
 
-app.post('/twitter-auth', (req, res) => {
-  const oauthToken = req.body.oauthToken;
-  const oauthTokenSecret = req.body.oauthTokenSecret;
-
-  const options = {
-    url: 'https://api.twitter.com/oauth/access_token',
-    oauth: {
-      consumer_key: consumerKey,
-      consumer_secret: consumerSecret,
-      token: oauthToken,
-      token_secret: oauthTokenSecret
-    }
-  };
-
-  request.post(options, (error, response, body) => {
-    if (!error && response.statusCode == 200) {
-      const data = new URLSearchParams(body);
-      const accessToken = data.get('oauth_token');
-      const accessTokenSecret = data.get('oauth_token_secret');
-      // Use the accessToken and accessTokenSecret to authenticate the user in your backend
-    } else {
-      res.status(response.statusCode).send(body);
-    }
-  });
+const oauth = OAuth({
+  consumer: {
+    key: API_KEY,
+    secret: API_SECRET_KEY,
+  },
+  signature_method: 'HMAC-SHA1',
+  hash_function: (base_string, key) => {
+    const signature = CryptoJS.HmacSHA1(base_string, key).toString(CryptoJS.enc.Base64);
+    return signature;
+  },
 });
 
-app.listen(3001, () => console.log('Express server is running on port 3001'));
+app.get('/', async (req, res) => {
+  try {
+    const request_data = {
+      url: 'https://api.twitter.com/oauth/request_token',
+      method: 'POST',
+    };
+    const headers = oauth.toHeader(oauth.authorize(request_data));
+    headers['Content-Type'] = 'application/x-www-form-urlencoded';
+    const response = await fetch(request_data.url, {
+      method: request_data.method,
+      headers,
+      mode: 'cors',
+      cache: 'no-cache',
+      credentials: 'same-origin',
+    });
+    const text = await response.text();
+    const token = text
+      .split('&')
+      .find(str => str.startsWith('oauth_token='))
+      .split('=')[1];
+    const token_secret = text
+      .split('&')
+      .find(str => str.startsWith('oauth_token_secret='))
+      .split('=')[1];
+    res.send({ token, token_secret });
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Internal Server Error');
+  }
+});
+
+const port = 3009;
+app.listen(port, () => {
+  console.log(`Server running on port ${port}`);
+});
