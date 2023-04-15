@@ -13,6 +13,7 @@ const user = require("../controller/userController")
 const path = require("path");
 const fs = require("fs");
 const { testFn } = require("../services/metamaskWalletValidator");
+const { membersModel } = require("../models/membersModel");
 require("dotenv").config();
 const cloudinary = require("cloudinary").v2;
 userRouter.use(express.json())
@@ -32,6 +33,32 @@ const oauth = OAuth({
     const signature = CryptoJS.HmacSHA1(base_string, key).toString(CryptoJS.enc.Base64);
     return signature;
   },
+});
+
+
+userRouter.get("/leadeboard", async (req, res) => {
+  try {
+    const members = await membersModel.aggregate([
+      {
+        $project: {
+          _id: 0,
+          name: 1,
+          image: 1,
+          points: 1,
+        },
+      },
+      {
+        $sort: {
+          points: -1,
+        },
+      },
+    ]); // Execute the aggregation pipeline and return a Promise
+    
+    res.json(members); // Return the members as a JSON response
+  } catch (error) {
+    console.error(error);
+    res.status(500).send("Internal Server Error");
+  }
 });
 
 userRouter.get('/twitter', async (req, res) => {
