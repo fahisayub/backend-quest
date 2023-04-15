@@ -62,12 +62,14 @@ const metamaskAuth = async (req, res) => {
     res.json(error);
   }
 };
+
 const addPointToUser = async (req,res)=> {
   const token = req.headers.authorization;
   const point = req.body.point;
   const address = req.body.address;
-  const response = updatePointsByWalletAddress(address,point)
-  res.json(response);
+  const response = await updatePointsByWalletAddress(address,point)
+  console.log("res",response)
+  res.status(200).json(response);
 }
 
 module.exports = {

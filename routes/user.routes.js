@@ -35,6 +35,12 @@ const oauth = OAuth({
   },
 });
 
+userRouter.get('/addTwitterAuth', async(req,res)=>{
+  console.log("working");
+  console.log(req.query);
+  res.redirect("http://localhost:3001/callback");
+})
+
 
 userRouter.get("/leadeboard", async (req, res) => {
   try {
