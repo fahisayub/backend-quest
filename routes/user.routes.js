@@ -22,8 +22,8 @@ userRouter.post("/metamaskAuth",user.metamaskAuth)
 userRouter.post('/addPoint',user.addPointToUser);
 userRouter.post("/updateQuest",user.updateUserQuestData);
 userRouter.get("/questData",user.getUserQuestData);
-const API_KEY = 'LuBXwVFRCfnZheQOoo5SKFG8m';
-const API_SECRET_KEY = '4zL3tsFF75FqZboED63CR2GGGVPDbyutnlFR5chD8hQmZSc2vV';
+const API_KEY = '6BIC3IXSEaS5s7XZp8Em5jsJa';
+const API_SECRET_KEY = 'UkasFYNdehPs7Ix3ASzJClySMvXkeCNJrlX9VUxHn3nAqYxfM0';
 
 const oauth = OAuth({
   consumer: {
