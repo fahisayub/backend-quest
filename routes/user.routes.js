@@ -44,7 +44,7 @@ userRouter.get('/addTwitterAuth', async(req,res)=>{
 })
 
 
-userRouter.get("/leadeboard", async (req, res) => {
+userRouter.get("/leaderboard", async (req, res) => {
   try {
     const members = await membersModel.aggregate([
       {
@@ -60,9 +60,9 @@ userRouter.get("/leadeboard", async (req, res) => {
           points: -1,
         },
       },
-    ]); // Execute the aggregation pipeline and return a Promise
-    
-    res.json(members); // Return the members as a JSON response
+    ]);
+
+    res.json({ members }); // Return the members as a JSON response with an object that has a "members" property
   } catch (error) {
     console.error(error);
     res.status(500).send("Internal Server Error");
