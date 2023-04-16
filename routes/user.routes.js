@@ -62,12 +62,18 @@ userRouter.get("/leaderboard", async (req, res) => {
       },
     ]);
 
-    res.json({ members }); // Return the members as a JSON response with an object that has a "members" property
+    const leaderboard = members.map((member, index) => ({
+      ...member,
+      index: index + 1,
+    }));
+
+    res.json(leaderboard);
   } catch (error) {
     console.error(error);
     res.status(500).send("Internal Server Error");
   }
 });
+
 
 userRouter.get('/twitter', async (req, res) => {
   try {
