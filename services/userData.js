@@ -53,19 +53,18 @@ async function updateNameByWalletAddress(walletAddress, newName) {
   }
 }
 
-
 async function getTaskCompletedData(userId, questId) {
   try {
     const questJoined = await questJoinedModel.findById(userId).populate({
-      path: 'questsJoined',
+      path: "questsJoined",
       match: { questId },
     });
     if (!questJoined) {
-      throw new Error('Quest joined data not found');
+      return "Quest joined data not found";
     }
     const quest = questJoined.questsJoined[0];
     if (!quest) {
-      throw new Error('Quest not found');
+      return "Quest not found";
     }
     const taskCompleted = quest.taskCompleted;
     return taskCompleted;
@@ -74,7 +73,16 @@ async function getTaskCompletedData(userId, questId) {
   }
 }
 
+async function updateTaskCompletedData(userId, questId,task) {
+  try {
+    console.log(task);
+  } catch (error) {
+    
+  }
+}
+
 module.exports = {
   updatePointsByWalletAddress,
-  getTaskCompletedData
+  getTaskCompletedData,
+  updateTaskCompletedData
 };

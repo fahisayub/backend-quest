@@ -2,7 +2,7 @@ const { membersModel } = require("../models/membersModel");
 const { metamaskValidator } = require("../services/metamaskWalletValidator");
 require("dotenv").config();
 const jwt = require("jsonwebtoken");
-const { updatePointsByWalletAddress } = require("../services/userData");
+const { updatePointsByWalletAddress, getTaskCompletedData , updateTaskCompletedData} = require("../services/userData");
 const metamaskAuth = async (req, res) => {
   try {
     const sign = req.body.signature;
@@ -63,6 +63,21 @@ const metamaskAuth = async (req, res) => {
   }
 };
 
+const getUserQuestData = async (req,res) => {
+  const questId = req.query.questId;
+  const userId = req.query.userId;
+  const res = await getTaskCompletedData(userId,questId);
+  res.status(200).json(res);
+}
+
+const updateUserQuestData = async (req,res) => {
+  const questId = req.body.questId;
+  const userId = req.body.userId;
+  const task = req.body.task;
+  const res = await updateTaskCompletedData(userId,questId);
+  res.status(200).json(res);
+}
+
 const addPointToUser = async (req,res)=> {
   const token = req.headers.authorization;
   const point = req.body.point;
@@ -72,7 +87,11 @@ const addPointToUser = async (req,res)=> {
   res.status(200).json(response);
 }
 
+
+
 module.exports = {
   metamaskAuth,
-  addPointToUser
+  addPointToUser,
+  getUserQuestData,
+  updateUserQuestData
 };

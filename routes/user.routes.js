@@ -19,7 +19,9 @@ const cloudinary = require("cloudinary").v2;
 userRouter.use(express.json())
 userRouter.get('/test',testFn)
 userRouter.post("/metamaskAuth",user.metamaskAuth)
-userRouter.post('/addPoint',user.addPointToUser)
+userRouter.post('/addPoint',user.addPointToUser);
+userRouter.post("/updateQuest",user.updateUserQuestData);
+userRouter.get("/questData",user.getUserQuestData)
 const API_KEY = 'LuBXwVFRCfnZheQOoo5SKFG8m';
 const API_SECRET_KEY = '4zL3tsFF75FqZboED63CR2GGGVPDbyutnlFR5chD8hQmZSc2vV';
 
