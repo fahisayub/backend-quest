@@ -20,7 +20,7 @@ const Web3 = require("web3");
         const obj = {
             message: "metamask Address Not Matched",
             status: 1,
-            error: false,
+            error: true,
           }
           return obj
     }

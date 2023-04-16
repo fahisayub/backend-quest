@@ -25,6 +25,7 @@ const metamaskAuth = async (req, res) => {
         name: data[0].name,
         email: data[0].email,
         image: data[0].image,
+        userId: data[0]._id,
         points: data[0].points,
         token: token,
         error: false,
