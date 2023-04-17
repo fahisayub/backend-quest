@@ -16,7 +16,7 @@ const metamaskAuth = async (req, res) => {
     let data = await membersModel.find({ walletAddress: address });
     if (data.length > 0) {
       const token = jwt.sign(
-        { userId: address},
+        { userId: address},{id:data._id},
         process.env.SecretKey,
       );
       res.send({
