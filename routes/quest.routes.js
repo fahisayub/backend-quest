@@ -91,33 +91,34 @@ questRouter.get("/allquest", async (req, res) => {
 
 questRouter.get("/:id", async (req, res) => {
   let data = await QuestModel.find({ _id: req.params.id });
-//   const token = req.headers.authorization;
-  const jwtData = await jwtExtractor("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIweDBlMTcwRTdFZmUxNDU4ZmU5MDQ5QUNlQzhCNDQzM2I3OWEwQTdEQkIiLCJpYXQiOjE2ODE3NDE3ODB9.iMCS6eOKITGRJ7GWPV9_yKkrCXa5sR4VjPcNcLjaET0")
-  console.log(jwtData);
-//   if (token) {
-//     const member = await membersModel.findById(userId);
-//     const taskExists = member.task.some(
-//       (task) => task.questId.toString() === questId.toString()
-//     );
-//     if (taskExists) {
-//       const existingTask = member.task.find(
-//         (task) => task.questId.toString() === questId.toString()
-//       );
-//       console.log(existingTask);
-//       res.send({
-//         message: "Quest data",
-//         status: 1,
-//         data: data[0],
-//         task:existingTask,
-//         error: false,
-//       });
-//     }
-//   }
+  const questId = req.params.id;
+  const token = req.headers.authorization;
+  if (token) {
+    const jwtData = await jwtExtractor(token.split(" ")[1]);
+    const member = await membersModel.findById(jwtData.id);
+    const taskExists = member.task.some(
+      (task) => task.questId.toString() === questId.toString()
+    );
+    if (taskExists) {
+      const existingTask = member.task.find(
+        (task) => task.questId.toString() === questId.toString()
+      );
+      console.log(existingTask);
+      return res.send({
+        message: "Quest data",
+        status: 1,
+        data: data[0],
+        task: existingTask.task,
+        error: false,
+      });
+    }
+  }
   if (data.length > 0) {
     res.send({
       message: "Quest data",
       status: 1,
       data: data[0],
+      task: data[0].task,
       error: false,
     });
   } else {
@@ -131,14 +132,19 @@ questRouter.get("/:id", async (req, res) => {
 
 questRouter.post("/completeTask", async (req, res) => {
   let task = req.body.task;
-  // let jwt = req.body.task;
-  let userId = req.body.userId;
+  let jwt = req.headers.authorization;
+  if(!jwt){
+   return res.send({
+        message: "invalid jwt token",
+        status: 0,
+        error: true,
+      });
+  }
+  const jwtData = await jwtExtractor(jwt.split(" ")[1]);
+  let userId = jwtData.id;
   let questId = req.body.questId;
   let data = await QuestModel.find({ _id: questId });
   let taskIndex = data[0].task.split("|").length;
-  let taskdb = data[0].task.split("|");
-  console.log(taskIndex);
-  console.log(taskdb);
   let datafromloop;
   for (let index = 0; index < taskIndex; index++) {
     if (task == data[0].task.split("|")[index]) {
@@ -149,12 +155,7 @@ questRouter.post("/completeTask", async (req, res) => {
   if (datafromloop == undefined) {
     return res.json("task not exist");
   }
-
-  let questTask = data[0].task.split("|")[datafromloop];
-  let questPoint = questTask.split("~")[2];
-  console.log(questPoint, "quest point");
-  let task_to_update;
-  console.log("data in loop", datafromloop);
+  // string patcher
   let vir_task = "";
   for (let index = 0; index < taskIndex; index++) {
     if (index == datafromloop && datafromloop == 0) {
@@ -167,7 +168,7 @@ questRouter.post("/completeTask", async (req, res) => {
       vir_task = vir_task + data[0].task.split("|")[index];
     }
   }
-  console.log(vir_task, "task to update");
+  
   const member = await membersModel.findById(userId);
   const taskExists = member.task.some(
     (task) => task.questId.toString() === questId.toString()
@@ -175,30 +176,31 @@ questRouter.post("/completeTask", async (req, res) => {
   const existingTask = member.task.find(
     (task) => task.questId.toString() === questId.toString()
   );
-  console.log(existingTask); //
+  
+  const taskStatus = existingTask.task.split("|")[datafromloop].split("~");
 
-  //   if (taskExists) {
-  //     const updatedMember = await membersModel.findOneAndUpdate(
-  //       { _id: userId, "task.questId": questId },
-  //       { $set: { "task.$.task": vir_task }, $inc: { points: 222 } },
-  //       { new: true }
-  //     );
-  //   } else {
-  //     const member = await membersModel.findByIdAndUpdate(
-  //       userId,
-  //       {
-  //         $push: { task: { questId: questId, task: task_to_update } },
-  //         $inc: { points: 222 },
-  //       } // Update object
+  if (taskStatus[3] == "completed") {
+    return res.json("task already is completed");
+  }
 
-  //       // Options object
-  //     );
-  //   }
-  // task updation function complete here
-  //
-
-  //    console.log("data from loop",datafromloop);
-  //    console.log(data[0].task.split("~")[2]);
+  if (taskExists) {
+    const updatedMember = await membersModel.findOneAndUpdate(
+      { _id: userId, "task.questId": questId },
+      {
+        $set: { "task.$.task": vir_task },
+        $inc: { points: Number(taskStatus[2]) },
+      },
+      { new: true }
+    );
+  } else {
+    const member = await membersModel.findByIdAndUpdate(
+      userId,
+      {
+        $push: { task: { questId: questId, task: vir_task } },
+        $inc: { points: Number(taskStatus[2]) },
+      }
+    );
+  }
   res.send("ok");
 });
 

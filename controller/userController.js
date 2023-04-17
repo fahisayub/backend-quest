@@ -14,11 +14,13 @@ const metamaskAuth = async (req, res) => {
       return res.json("invalid user");
     }
     let data = await membersModel.find({ walletAddress: address });
+    console.log(data[0]._id.toString());
     if (data.length > 0) {
       const token = jwt.sign(
-        { userId: address},{id:data._id},
+        { userId: address,id:data[0]._id.toString()},
         process.env.SecretKey,
       );
+      console.log(token);
       res.send({
         message: "Login successful",
         status: 1,
