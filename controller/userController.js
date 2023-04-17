@@ -35,7 +35,7 @@ const metamaskAuth = async (req, res) => {
         let user = new membersModel({
           walletAddress: address,
           name: address,
-          task : [{taskName:"DicordAuth",taskPoints:100,taskId:1}],
+          task : [{questId:"sf",task:"sfu"}],
           points: 10,
         });
         await user.save();

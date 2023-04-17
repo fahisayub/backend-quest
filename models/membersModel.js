@@ -7,27 +7,20 @@ const membersSchema = mongoose.Schema({
   Bio: { type: String },
   image: { type: String },
   task: [
-    {
-      taskId: {
-         type:Number,
-        required: true,
-      },
-      taskName: {
-        type: String,
-      },
-      taskPoints: {
-        type: Number,
-        default: 10,
-      },
-      taskCompleted: {
-        type: Boolean,
-        default: false,
-      },
-    },
+      {
+        questId:{
+          type:mongoose.Types.ObjectId,
+          ref:"/quest"
+        },
+        task:{
+          type:String
+        }
+      }
+     
   ],
   totalq: { type: Number },
-  points: { type: Number, default: 00 },
-  lastUpdated: { type: Date, default: Date() },
+  points: { type: Number, default: 0 },
+  lastUpdated: { type: Date, default: Date.now },
 });
 
 const membersModel = mongoose.model("/members", membersSchema);

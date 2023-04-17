@@ -2,6 +2,7 @@ const express = require("express")
 const { authenticator } = require("../middlewares/authenticator")
 const jwt = require("jsonwebtoken")
 const { QuestModel } = require("../models/QuestModel")
+const { membersModel } = require("../models/membersModel")
 
 const questRouter = express.Router()
 questRouter.post("/create",(req,res)=>{
@@ -86,6 +87,35 @@ questRouter.get("/:id",async(req,res)=>{
             error:true
         })
     }
+
+
+})
+questRouter.post("/completeTask",async(req,res)=>{
+    let task = req.body.task;
+    let jwt = req.body.task;
+    let userId = req.body.task;
+    let questId = req.body.questId;
+    console.log(questId,"quest id")
+    // let member = membersModel.findById(userId);
+//    member.task.push({questId,task})
+    let data = await QuestModel.find({_id:questId})
+    console.log("quest data",data);
+    let taskIndex = data[0].task.split('|').length
+    let datafromloop;
+   for (let index = 0; index < taskIndex; index++) {
+    if (task == data[0].task.split('|')[index]) {
+        datafromloop = index;
+        break
+    }
+   }
+   let questTask = data[0].task.split('|')[datafromloop];
+   let member = membersModel.findById(userId);
+   member.task({questId:questId,task})
+  member({ $inc: { points: Number(questTask.split("~")[2]) }})
+member.save();
+   console.log("data from loop",datafromloop);
+   console.log(data[0].task.split("~")[2]);
+   res.send("ok")
 
 
 })
