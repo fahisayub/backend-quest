@@ -35,7 +35,7 @@ const metamaskAuth = async (req, res) => {
         let user = new membersModel({
           walletAddress: address,
           name: address,
-          task : [{questId:"sf",task:"sfu"}],
+          task : [{questId:"64198cb95d3c955c46d7e4dc",task:"sfu"}],
           points: 10,
         });
         await user.save();
