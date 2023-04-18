@@ -105,8 +105,11 @@ userRouter.get("/twitter/:jwt", async (req, res) => {
   const user  = await membersModel.findById(jwtData.id);
   console.log("user data",user);
   if(user.twitterAuth.status){
-    const t = await getFollowerList(user.twitterAuth.accessKey,user.twitterAuth.seceret);
-    console.log(t,"followers");
+    return res.send({
+      data: "user already registerd",
+      status: 0,
+      error: true,
+    });
   }
   console.log("second line called");
   try {

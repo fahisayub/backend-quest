@@ -4,7 +4,8 @@
 
 const Twit = require('twit');
 
-const getLetestRetweet = async (access_token, access_token_secret) => {
+const getLetestRetweet = async (access_token, access_token_secret,url) => {
+  console.log(url);
   const config = {
     consumer_key: 'WZZYZu6tMUSQIEKkdp8YFWRCU',
     consumer_secret: '94ExcdyHLBYg7h2iKEhcxtB5XDYo3oGasCjCUm5v1n80YRnfUm',
@@ -21,14 +22,27 @@ const getLetestRetweet = async (access_token, access_token_secret) => {
   };
 
   try {
+    
+    const match = url.match(/\/(\d+)(\?|$)/)[1];
+    const tweetId = match;
     const { data } = await T.get('statuses/user_timeline', params);
-    return data[0].retweeted_status.id_str;
+    console.log(data[0].retweeted_status.id_str)
+    console.log(tweetId,"tweet id");
+    if (data[0].retweeted_status.id_str==tweetId) {
+      console.log("tweeted");
+      return true;
+    } else {
+      console.log("not tweeted")
+      return false
+    }
+    
   } catch (err) {
     console.log(err);
   }
 };
 
-const getFollowerList = async (access_token, access_token_secret, screen_name,userName) => {
+const getFollowerList = async (access_token, access_token_secret,profilLink) => {
+  console.log("accses token",access_token,access_token_secret)
   const config = {
     consumer_key: 'WZZYZu6tMUSQIEKkdp8YFWRCU',
     consumer_secret: '94ExcdyHLBYg7h2iKEhcxtB5XDYo3oGasCjCUm5v1n80YRnfUm',
@@ -39,16 +53,19 @@ const getFollowerList = async (access_token, access_token_secret, screen_name,us
   const T = new Twit(config);
 
   const params = {
-    screen_name: screen_name,
+    screen_name: "twitter username",
   };
 
   try {
-    const response = await T.get('friends/list', params);
+    console.log("profilelink",profilLink);
+    const username = profilLink.split('/').pop();
+    console.log("usee name",username);
+    const response = await T.get('friends/list');
     const following = response.data.users.map(user => user.screen_name);
-    return following.includes("Theta_Network");
+    return following.includes(username);
   } catch (error) {
-    console.error(error);
-    throw error;
+   
+    
   }
 };
 

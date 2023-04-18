@@ -136,7 +136,7 @@ questRouter.get("/:id", async (req, res) => {
   }
 });
 
-questRouter.post("/completeTask",taskComplete );
+questRouter.post("/completeTask",taskComplete);
 
 questRouter.use(authenticator);
 questRouter.get("/", (req, res) => {

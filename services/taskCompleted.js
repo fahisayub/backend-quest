@@ -1,5 +1,9 @@
 const { jwtExtractor } = require("../middlewares/jwt");
+const { QuestModel } = require("../models/QuestModel");
 const { membersModel } = require("../models/membersModel");
+const { questJoinedModel } = require("../models/questJoinedModel");
+const { getFollowerList, getLetestRetweet } = require("./twitterRetweetValidator");
+
 const taskComplete = async (req, res) => {
     let task = req.body.task;
     let jwt = req.headers.authorization;
@@ -19,9 +23,13 @@ const taskComplete = async (req, res) => {
     let questId = req.body.questId;
     console.log(req.body);
     let data = await QuestModel.find({ _id: questId });
-    console.log(data);
+    // console.log(data);
     console.log("ye task hai",task)
-    let taskData = task.split("~");
+    const taskData = task.split("~");
+    console.log("task data is",taskData);
+    const taskType = taskData[0].toLowerCase();
+    let platform = null;
+    let platformSubTask=null
     let taskIndex = data[0].task.split("|").length;
     let datafromloop;
     for (let index = 0; index < taskIndex; index++) {
@@ -31,7 +39,7 @@ const taskComplete = async (req, res) => {
         break;
       }
     }
-    
+
     if (datafromloop == undefined) {
       console.log("data comming is undefines")
       return res.json("task not exist");
@@ -42,6 +50,39 @@ const taskComplete = async (req, res) => {
   
     // console.log("virtual task", vir_task);
     const member = await membersModel.findById(userId);
+    console.log("find member completed",member)
+    if (taskType.includes('twitter')) {
+        platform = "twitter"
+        if (taskType.includes('follow')) {
+            platformSubTask = "follow"
+            console.log("taskdata",taskData[1]);
+         const resp = await  getFollowerList(member.twitterAuth.accessKey,member.twitterAuth.seceret,taskData[1])
+         if(!resp){
+            return res.json({
+                data: "please follow the account to complete task",
+                status: 0,
+                error: true,
+            })}
+         console.log("follow data",res);
+        }else if (taskType.includes('retweet')){
+           platformSubTask = "retweet";
+          const resp = await getLetestRetweet(member.twitterAuth.accessKey,member.twitterAuth.seceret,taskData[1])
+          if(!resp){
+            return res.json({
+                data: "please retweet the tweet",
+                status: 0,
+                error: true,
+            })
+          }
+        }
+    } else if(taskType.includes('discord')){
+        platform = "discord"
+    }
+    // return res.json({
+    //     data: "test mode",
+    //     status: 0,
+    //     error: true,
+    // })
     const taskExists = member.task.some(
       (task) => task.questId.toString() === questId.toString()
     );
