@@ -14,7 +14,7 @@ const metamaskAuth = async (req, res) => {
       return res.json("invalid user");
     }
     let data = await membersModel.find({ walletAddress: address });
-    console.log(data[0]._id.toString());
+
     if (data.length > 0) {
       const token = jwt.sign(
         { userId: address,id:data[0]._id.toString()},
@@ -39,9 +39,12 @@ const metamaskAuth = async (req, res) => {
           name: address,
           task : [{questId:"64198cb95d3c955c46d7e4dc",task:"sfu"}],
           points: 10,
+          new:true,
+
         });
         await user.save();
-        const token = jwt.sign({ userId: 1 }, process.env.SecretKey);
+        const token = jwt.sign({ userId:address ,id:user._id.toString()}, process.env.SecretKey);
+        console.log("new user id",user._id.toString());
         res.send({
           message: "Login successful",
           status: 1,

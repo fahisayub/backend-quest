@@ -1,48 +1,72 @@
 const express = require("express");
 const userRouter = express.Router();
 const bcrypt = require("bcrypt");
-const OAuth = require('oauth-1.0a');
-const CryptoJS = require('crypto-js');
+const OAuth = require("oauth-1.0a");
+const CryptoJS = require("crypto-js");
 const { UserModel } = require("../models/UserModel");
 const jwt = require("jsonwebtoken");
 const { authenticator } = require("../middlewares/authenticator");
 const multer = require("multer");
 const upload = multer({ dest: "uploads/" });
 const sharp = require("sharp");
-const user = require("../controller/userController")
+const user = require("../controller/userController");
 const path = require("path");
 const fs = require("fs");
 const { testFn } = require("../services/metamaskWalletValidator");
 const { membersModel } = require("../models/membersModel");
+const session = require("express-session");
+const { twitterAuth } = require("../models/twitterSession");
+const { user_twitter_access_key } = require("../services/twitterValidator");
+const { getLetestRetweet, getFollowerList } = require("../services/twitterRetweetValidator");
+const { jwtExtractor } = require("../middlewares/jwt");
 require("dotenv").config();
 const cloudinary = require("cloudinary").v2;
-userRouter.use(express.json())
-userRouter.get('/test',testFn)
-userRouter.post("/metamaskAuth",user.metamaskAuth)
-userRouter.post('/addPoint',user.addPointToUser);
-userRouter.post("/updateQuest",user.updateUserQuestData);
-userRouter.get("/questData",user.getUserQuestData);
-const API_KEY = '6BIC3IXSEaS5s7XZp8Em5jsJa';
-const API_SECRET_KEY = 'UkasFYNdehPs7Ix3ASzJClySMvXkeCNJrlX9VUxHn3nAqYxfM0';
+
+userRouter.use(express.json());
+userRouter.use(
+  session({
+    secret: "my-secret-key",
+    resave: false,
+    saveUninitialized: true,
+  })
+);
+userRouter.get("/test", testFn);
+userRouter.post("/metamaskAuth", user.metamaskAuth);
+userRouter.post("/addPoint", user.addPointToUser);
+userRouter.post("/updateQuest", user.updateUserQuestData);
+userRouter.get("/questData", user.getUserQuestData);
+const API_KEY = "WZZYZu6tMUSQIEKkdp8YFWRCU";
+const API_SECRET_KEY = "94ExcdyHLBYg7h2iKEhcxtB5XDYo3oGasCjCUm5v1n80YRnfUm";
 
 const oauth = OAuth({
   consumer: {
     key: API_KEY,
     secret: API_SECRET_KEY,
   },
-  signature_method: 'HMAC-SHA1',
+  signature_method: "HMAC-SHA1",
   hash_function: (base_string, key) => {
-    const signature = CryptoJS.HmacSHA1(base_string, key).toString(CryptoJS.enc.Base64);
+    const signature = CryptoJS.HmacSHA1(base_string, key).toString(
+      CryptoJS.enc.Base64
+    );
     return signature;
   },
 });
 
-userRouter.get('/addTwitterAuth', async(req,res)=>{
+userRouter.get("/addTwitterAuth", async (req, res) => {
+  const previousData = await twitterAuth.findById(req.query.oauth_token);
+  console.log(previousData);
+  const userData = await user_twitter_access_key(previousData.token,previousData.tokenSecret,req.query.oauth_verifier);
+  const retweets = await getLetestRetweet(userData.accessToken,userData.accessTokenSecret);
+  console.log(userData);
+  const userId = await jwtExtractor(previousData.jwt);
+  console.log("user jwt data",userId)
+  const updateKey = await membersModel.findByIdAndUpdate(userId.id,{$set:{twitterAuth:{accessKey:userData.accessToken,seceret:userData.accessTokenSecret,status:true}}});
+  console.log(updateKey);
   console.log("working");
   console.log(req.query);
+  console.log("latest tweets",retweets)
   res.redirect("http://localhost:3000/callback");
-})
-
+});
 
 userRouter.get("/leaderboard", async (req, res) => {
   try {
@@ -74,35 +98,53 @@ userRouter.get("/leaderboard", async (req, res) => {
   }
 });
 
-
-userRouter.get('/twitter', async (req, res) => {
+userRouter.get("/twitter/:jwt", async (req, res) => {
+  console.log(req.params.jwt);
+  const jwtData = await jwtExtractor(req.params.jwt);
+  console.log("jwt data",jwtData)
+  const user  = await membersModel.findById(jwtData.id);
+  console.log("user data",user);
+  if(user.twitterAuth.status){
+    const t = await getFollowerList(user.twitterAuth.accessKey,user.twitterAuth.seceret);
+    console.log(t,"followers");
+  }
+  console.log("second line called");
   try {
     const request_data = {
-      url: 'https://api.twitter.com/oauth/request_token',
-      method: 'POST',
+      url: "https://api.twitter.com/oauth/request_token",
+      method: "POST",
     };
     const headers = oauth.toHeader(oauth.authorize(request_data));
-    headers['Content-Type'] = 'application/x-www-form-urlencoded';
+    headers["Content-Type"] = "application/x-www-form-urlencoded";
     const response = await fetch(request_data.url, {
       method: request_data.method,
       headers,
-      mode: 'cors',
-      cache: 'no-cache',
-      credentials: 'same-origin',
+      mode: "cors",
+      cache: "no-cache",
+      credentials: "same-origin",
     });
+
     const text = await response.text();
     const token = text
-      .split('&')
-      .find(str => str.startsWith('oauth_token='))
-      .split('=')[1];
+      .split("&")
+      .find((str) => str.startsWith("oauth_token="))
+      .split("=")[1];
     const token_secret = text
-      .split('&')
-      .find(str => str.startsWith('oauth_token_secret='))
-      .split('=')[1];
-    res.send({ token, token_secret });
+      .split("&")
+      .find((str) => str.startsWith("oauth_token_secret="))
+      .split("=")[1];
+    console.log("user requested data", token, token_secret);
+    const obj = new twitterAuth({
+      _id: token,
+      jwt: req.params.jwt,
+      tokenSecret: token_secret,
+      token: token,
+    });
+    obj.save();
+    res.send({ token });
   } catch (error) {
     console.error(error);
-    res.status(500).send('Internal Server Error');
+    res.status(500).send("Internal Server Error");
   }
 });
 
@@ -142,7 +184,6 @@ userRouter.post("/register", upload.single("image"), async (req, res) => {
         { folder: "winter" },
         (err, result) => {
           if (err) {
-          
             console.error(err);
             fs.unlinkSync(req.file.path + ".jpg");
             res.send({
@@ -184,7 +225,6 @@ userRouter.post("/register", upload.single("image"), async (req, res) => {
                   message: "Somthing went wrong" + error.message,
                   status: 0,
                   error: true,
-
                 });
               }
             });
@@ -202,10 +242,9 @@ userRouter.post("/register", upload.single("image"), async (req, res) => {
   }
 });
 
-
 userRouter.post("/login", async (req, res) => {
   let { email, password } = req.body;
-  console.log("109",req.body)
+  console.log("109", req.body);
   try {
     let data = await UserModel.find({ email });
     if (data.length > 0) {

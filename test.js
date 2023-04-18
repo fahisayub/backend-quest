@@ -1,36 +1,61 @@
-const Twit = require('twit');
-const axios = require('axios');
-// const consumerKey = "1440066097374371840-tyYzOWfrvhrvgWXwk03GuURvw9CPuy"
-// const secretKey = "kUPfH9SjsNQRq1RxhMf1JESLi3ieKH76Wi70aZlaDkQDx"
+// const Twit = require('twit');
+
+// const oauthToken = 'Iz_3sAAAAAABmp6UAAABh5MSvUE';
+// const oauthTokenSecret = 'aLEn4ixYM0HHFuudbCK2ozJORz95MVUQ';
+// const oauthVerifier = 'gUT9eMTeKlYCyM04iGjIabchQC1gtrvT';
+// const consumerKey = 'WZZYZu6tMUSQIEKkdp8YFWRCU';
+// const consumerSecret = '94ExcdyHLBYg7h2iKEhcxtB5XDYo3oGasCjCUm5v1n80YRnfUm';
+
 // const T = new Twit({
-//   consumer_key: "6BIC3IXSEaS5s7XZp8Em5jsJa",
-//   consumer_secret: "UkasFYNdehPs7Ix3ASzJClySMvXkeCNJrlX9VUxHn3nAqYxfM0",
-//   access_token: consumerKey,
-//   access_token_secret: secretKey,
+//   consumer_key: consumerKey,
+//   consumer_secret: consumerSecret,
+//   access_token: oauthToken,
+//   access_token_secret: oauthTokenSecret,
 // });
 
+// T.post('oauth/access_token', { oauth_verifier: oauthVerifier }, (err, data, response) => {
+//   if (err) {
+//     console.error(err);
+//   } else {
+//     const accessToken = data.oauth_token;
+//     const accessTokenSecret = data.oauth_token_secret;
+//     console.log('Access token:', accessToken);
+//     console.log('Access token secret:', accessTokenSecret);
+//   }
+// });
 
-//   T.get('followers/ids', function(err, data, response) {
-//     if (err) {
-//       console.log(err);
-//     } else {
-//       const followerIds = data.ids;
-//      console.log(followerIds)
-//   }});
+const Twit = require('twit');
 
- 
+const config = {
+  consumer_key: 'WZZYZu6tMUSQIEKkdp8YFWRCU',
+  consumer_secret: '94ExcdyHLBYg7h2iKEhcxtB5XDYo3oGasCjCUm5v1n80YRnfUm',
+  access_token: '1440066097374371840-dxXgc0ZnXSQeR6B3b73jQdgUvjpwyH',
+  access_token_secret: 'wccowKA1atenDWsVH0DLK8QZ5gRfWGBDs6SZZwu3W9bet',
+};
+const T = new Twit(config);
 
-const bearerToken = '<your_bearer_token>';
+// const params = {
+//   screen_name: 'username_of_user'
+// };
 
-const t = axios.get('https://api.twitter.com/2/users/by/username/:BitVenusNT', {
-  headers: {
-    Authorization: `Bearer ${'AAAAAAAAAAAAAAAAAAAAAJSemgEAAAAACdsOlOydqoE%2BJ9u3ohxJwrDW0IA%3DbjMuPrz8KtCFxfLiyVAnpsUYPepag2D2TDkIrHcdpa5ii1bYoM'}`,
-  },
-})
-  .then((response) => {
-    const isFollowing = response.data.data.public_metrics.following_count > 0;
-    console.log('Is the user following the profile?', isFollowing);
-  })
-  .catch((error) => {
-    console.error(error);
-  });
+// T.get('followers/list', function(err, data, response) {
+//   if (err) {
+//     console.log(err);
+//   } else {
+//     console.log(data);
+//   }
+// });
+
+const params = {
+  screen_name: 'twitter username', // replace with the username of the user whose latest tweet you want to fetch
+  count: 1, // set the number of tweets you want to fetch
+  tweet_mode: 'extended', // set tweet mode to extended to fetch full text of tweets
+};
+
+T.get('statuses/user_timeline', params, (err, data, response) => {
+  if (err) {
+    console.log(err);
+  } else {
+    console.log(data[0]);
+  }
+});

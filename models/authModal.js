@@ -10,17 +10,23 @@ const authSchema = mongoose.Schema({
     expiresAt: Date,
     guilds: [String]
   },
-  twitterAuth:{
+ 
     twitterId: {
       type: String,
+    },
+    twitterOauthToken:{
+       type:String
+    },
+    twitterOauthSecret:{
+       type:String
     },
     token: {
       type: String,
     },
     tokenSecret: {
       type: String,
-    }
-  },
+    },
+  
   lastUpdated: { type: Date, default: Date() },
 });
 

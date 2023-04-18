@@ -4,6 +4,7 @@ const jwt = require("jsonwebtoken");
 const { QuestModel } = require("../models/QuestModel");
 const { membersModel } = require("../models/membersModel");
 const { jwtExtractor } = require("../middlewares/jwt");
+const { taskComplete } = require("../services/taskCompleted");
 
 const questRouter = express.Router();
 questRouter.post("/create", (req, res) => {
@@ -94,11 +95,13 @@ questRouter.get("/:id", async (req, res) => {
   const questId = req.params.id;
   const token = req.headers.authorization;
   const jwt = token.split(" ")[1];
-
+   console.log("jwt token",jwt)
   if (jwt.length > 12) {
     console.log("error in jwt");
     const jwtData = await jwtExtractor(jwt);
+    console.log("jwt data 102",jwtData)
     const member = await membersModel.findById(jwtData.id);
+    console.log(member)
     const taskExists = member.task.some(
       (task) => task.questId.toString() === questId.toString()
     );
@@ -133,107 +136,7 @@ questRouter.get("/:id", async (req, res) => {
   }
 });
 
-questRouter.post("/completeTask", async (req, res) => {
-  let task = req.body.task;
-  let jwt = req.headers.authorization;
-  if (!jwt) {
-    return res.send({
-      message: "invalid jwt token",
-      status: 0,
-      error: true,
-    });
-  }
-  console.log(jwt);
-  const jwtData = await jwtExtractor(jwt.split(" ")[1]);
-  let userId = jwtData.id;
-  let questId = req.body.questId;
-  console.log(req.body);
-  let data = await QuestModel.find({ _id: questId });
-  console.log(data);
-  let taskData = task.split("~");
-  let taskIndex = data[0].task.split("|").length;
-  let datafromloop;
-  for (let index = 0; index < taskIndex; index++) {
-    if (task == data[0].task.split("|")[index]) {
-      datafromloop = index;
-      break;
-    }
-  }
-  
-  if (datafromloop == undefined) {
-    return res.json("task not exist");
-  }
-  console.log("testing phase 1")
-
-  // string patcher
-
-  console.log("virtual task", vir_task);
-  const member = await membersModel.findById(userId);
-  const taskExists = member.task.some(
-    (task) => task.questId.toString() === questId.toString()
-  );
-  let existingTask;
-  var vir_task = "";
-  if (taskExists) {
-    existingTask = member.task.find(
-      (task) => task.questId.toString() === questId.toString()
-    );
-    for (let index = 0; index < taskIndex; index++) {
-      if (index == datafromloop && datafromloop == 0) {
-        vir_task =
-          vir_task + existingTask.task.split("|")[index] + "~completed";
-      } else if (index == datafromloop) {
-        vir_task =
-          vir_task + "|" + existingTask.task.split("|")[index] + "~completed";
-      } else if (index >= 1 && index != datafromloop) {
-        vir_task = vir_task + "|" + existingTask.task.split("|")[index];
-      } else {
-        vir_task = vir_task + existingTask.task.split("|")[index];
-      }
-    }
-    const taskStatus = existingTask.task.split("|")[datafromloop].split("~");
-
-    console.log("existing task", existingTask);
-
-    if (taskStatus[3] == "completed") {
-      return res.json("task already is completed");
-    }
-  }else{
-    console.log("testing phase 2")
-    for (let index = 0; index < taskIndex; index++) {
-      if (index == datafromloop && datafromloop == 0) {
-        vir_task =
-          vir_task + data[0].task.split("|")[index] + "~completed";
-      } else if (index == datafromloop) {
-        vir_task =
-          vir_task + "|" + data[0].task.split("|")[index] + "~completed";
-      } else if (index >= 1 && index != datafromloop) {
-        vir_task = vir_task + "|" + data[0].task.split("|")[index];
-      } else {
-        vir_task = vir_task + data[0].task.split("|")[index];
-      }
-    }
-  }
-  
-
-  if (taskExists) {
-    const updatedMember = await membersModel.findOneAndUpdate(
-      { _id: userId, "task.questId": questId },
-      {
-        $set: { "task.$.task": vir_task },
-        $inc: { points: Number(taskData[2]) },
-      },
-      { new: true }
-    );
-  } else {
-    const member = await membersModel.findByIdAndUpdate(userId, {
-      $push: { task: { questId: questId, task: vir_task } },
-      $inc: { points: Number(taskData[2]) },
-    });
-  }
-  console.log("all done");
-  res.send("ok");
-});
+questRouter.post("/completeTask",taskComplete );
 
 questRouter.use(authenticator);
 questRouter.get("/", (req, res) => {

@@ -18,6 +18,7 @@ const membersSchema = mongoose.Schema({
       }
      
   ],
+  twitterAuth:{accessKey:{type:String},seceret:{type:String},status:{type:Boolean,default:false}},
   totalq: { type: Number },
   points: { type: Number, default: 0 },
   lastUpdated: { type: Date, default: Date.now },
