@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Discord OAuth2 Example</title>
+  </head>
+  <body>
+    <h1>Discord OAuth2 Example</h1>
+    <p>Click the button below to authenticate with Discord:</p>
+    <button id="discord-auth-btn">Authenticate with Discord</button>
+    <script>
+      const discordAuthBtn = document.getElementById('discord-auth-btn');
+      discordAuthBtn.addEventListener('click', () => {
+        const redirectURI = 'http://localhost:3034/auth/discord/callback'; // Replace with your redirect URI
+        const scopes = 'identify guilds'; // Replace with the scopes you want to request
+        const authorizeURL = `https://discord.com/api/oauth2/authorize?client_id=1093225051781869668&redirect_uri=http%3A%2F%2Flocalhost%3A3034%2Fauth%2Fdiscord%2Fcallback&response_type=code&scope=identify%20guilds%20guilds.join%20connections%20guilds.members.read&state=${JSON.stringify("user auth")}`
+                window.location.href = authorizeURL;
+      });
+    </script>
+  </body>
+</html>
