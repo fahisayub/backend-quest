@@ -60,7 +60,7 @@ const getServerJoinedStatus = async (userKey, invitationUrl) => {
     );
      data = response.data.guild.id;
   } catch (error) {
-    
+    console.log("disord error")
   }
   const server = guilds.find((guild) => guild.id == data);
  if (server===undefined) {

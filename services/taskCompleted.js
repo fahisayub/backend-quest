@@ -6,6 +6,7 @@ const { getServerJoinedStatus } = require("./discordBeta");
 const { getFollowerList, getLetestRetweet } = require("./twitterRetweetValidator");
 
 const taskComplete = async (req, res) => {
+  console.log("incoming task")
     let task = req.body.task;
     let jwt = req.headers.authorization;
     let jwtToken = jwt.split(" ")[1]
@@ -80,7 +81,7 @@ const taskComplete = async (req, res) => {
         platform = "discord"
         console.log(taskData[1])
         console.log("auth key",(member.discordAuth.accessKey));
-       const  resp = await getServerJoinedStatus(member.discordAuth.accessKey,taskData[1]);
+       const resp = await getServerJoinedStatus(member.discordAuth.accessKey,taskData[1]);
         if(!resp){
           return res.json({
               data: "please join discord server",
@@ -158,6 +159,7 @@ const taskComplete = async (req, res) => {
     }
     console.log("all done");
     const obj = {
+      error:false,
       task:task+"~"+"completed"
     }
     res.json(obj);
