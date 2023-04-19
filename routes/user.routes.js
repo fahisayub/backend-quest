@@ -19,6 +19,7 @@ const { twitterAuth } = require("../models/twitterSession");
 const { user_twitter_access_key } = require("../services/twitterValidator");
 const { getLetestRetweet, getFollowerList } = require("../services/twitterRetweetValidator");
 const { jwtExtractor } = require("../middlewares/jwt");
+const { getDiscordAuthUrl, getUserKeyDiscord } = require("../services/discordBeta");
 require("dotenv").config();
 const cloudinary = require("cloudinary").v2;
 
@@ -51,6 +52,29 @@ const oauth = OAuth({
     return signature;
   },
 });
+
+userRouter.get('/dicordCallback',getUserKeyDiscord);
+
+userRouter.get('/discord/:jwt',async(req,res)=>{
+  const jwtData = await jwtExtractor(req.params.jwt);
+  const user  = await membersModel.findById(jwtData.id);
+  console.log("discord auth icoming");
+  console.log("user discord data",user.discordAuth)
+  console.log("user data",user);
+  if(user.discordAuth.status){
+    return res.send({
+      data: "user already registerd",
+      status: 0,
+      error: true,
+    });
+  }
+ const url =await getDiscordAuthUrl();
+ res.send({
+  data: url,
+  status: 0,
+  error: false,
+})
+})
 
 userRouter.get("/addTwitterAuth", async (req, res) => {
   const previousData = await twitterAuth.findById(req.query.oauth_token);

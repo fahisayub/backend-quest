@@ -5,13 +5,14 @@ const { jwtExtractor } = require("../middlewares/jwt");
 
 const clientID = "1093225051781869668";
 const clientSecret = "dcPN59P2dj9hmHv4ABwGpgNBlJKlf28D";
-const redirectURI = "http://localhost:3034/auth/discord/callback";
+const redirectURI = "http://localhost:4000/user/dicordCallback";
 
 const getUserKeyDiscord = async (req, res) => {
   console.log("callback recivied");
   console.log("callback data", req.query);
-  const jwtToken = JSON.parse(req.query.state);
-  console.log("state", state);
+  const jwt = JSON.parse(req.query.state);
+  const jwtToken = jwt.replace(/'/g, '');
+  console.log("jwt token",jwtToken);
   const code = req.query.code;
   const tokenParams = {
     client_id: clientID,
@@ -30,28 +31,43 @@ const getUserKeyDiscord = async (req, res) => {
     { headers: tokenHeaders }
   );
   const accessToken = tokenResponse.data.access_token;
-  const jwtData = jwtExtractor(jwtToken);
+  const jwtData = await jwtExtractor(jwtToken);
+  console.log(jwtData.id);
   const user = await membersModel.findByIdAndUpdate(jwtData.id,{$set:{discordAuth:{accessKey:accessToken,status:true}}});
   console.log("access token is ", accessToken);
-  res.send("ok");
+  res.redirect("http://localhost:3000/MyQuest");
 };
 
-const getDiscordAuthUrl=async(req,res)=>{
-
+const getDiscordAuthUrl=async()=>{
+ return 'https://discord.com/api/oauth2/authorize?client_id=1093225051781869668&redirect_uri=http%3A%2F%2Flocalhost%3A4000%2Fuser%2FdicordCallback&response_type=code&scope=identify%20guilds%20guilds.join%20connections%20guilds.members.read'
 }
 
 const getServerJoinedStatus = async (userKey, invitationUrl) => {
+  const key = userKey
+  console.log("input invitation url",invitationUrl)
+  const inviteId = invitationUrl.match(/discord\.gg\/(\w+)/)[1];
+  console.log(inviteId); // prints "pZRGtJfr"
+  
   const guildsResponse = await axios.get(
     "https://discord.com/api/users/@me/guilds",
-    { headers: { Authorization: `Bearer ${"BY9LdB62AoRNHGwc8EKODT6477NNgT"}` } }
+    { headers: { Authorization: `Bearer ${key}` } }
   );
+  let data;
   const guilds = guildsResponse.data;
-  const response = await axios.get(
-    `https://discord.com/api/invites/${"pZRGtJfr"}`
-  );
-  const data = response.data.guild.id;
-  const server = guilds.find((guild) => guild.id == 123);
-  console.log(server);
+  try {
+    const response = await axios.get(
+      `https://discord.com/api/invites/${inviteId}`
+    );
+     data = response.data.guild.id;
+  } catch (error) {
+    
+  }
+  const server = guilds.find((guild) => guild.id == data);
+ if (server===undefined) {
+  return false;
+ } else {
+  return true
+ }
 };
 
-module.exports = { getUserKeyDiscord, getServerJoinedStatus };
+module.exports = { getUserKeyDiscord, getServerJoinedStatus,getDiscordAuthUrl };

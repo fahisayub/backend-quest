@@ -2,6 +2,7 @@ const { jwtExtractor } = require("../middlewares/jwt");
 const { QuestModel } = require("../models/QuestModel");
 const { membersModel } = require("../models/membersModel");
 const { questJoinedModel } = require("../models/questJoinedModel");
+const { getServerJoinedStatus } = require("./discordBeta");
 const { getFollowerList, getLetestRetweet } = require("./twitterRetweetValidator");
 
 const taskComplete = async (req, res) => {
@@ -77,6 +78,16 @@ const taskComplete = async (req, res) => {
         }
     } else if(taskType.includes('discord')){
         platform = "discord"
+        console.log(taskData[1])
+        console.log("auth key",(member.discordAuth.accessKey));
+       const  resp = await getServerJoinedStatus(member.discordAuth.accessKey,taskData[1]);
+        if(!resp){
+          return res.json({
+              data: "please join discord server",
+              status: 0,
+              error: true,
+          })
+        }
     }
     // return res.json({
     //     data: "test mode",
