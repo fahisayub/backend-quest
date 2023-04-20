@@ -5,7 +5,7 @@ const { jwtExtractor } = require("../middlewares/jwt");
 
 const clientID = "1093225051781869668";
 const clientSecret = "dcPN59P2dj9hmHv4ABwGpgNBlJKlf28D";
-const redirectURI = "http://localhost:4000/user/dicordCallback";
+const redirectURI = "https://cryptotool.in/user/dicordCallback";
 
 const getUserKeyDiscord = async (req, res) => {
   console.log("callback recivied");
@@ -35,12 +35,11 @@ const getUserKeyDiscord = async (req, res) => {
   console.log(jwtData.id);
   const user = await membersModel.findByIdAndUpdate(jwtData.id,{$set:{discordAuth:{accessKey:accessToken,status:true}}});
   console.log("access token is ", accessToken);
-  res.redirect("http://localhost:3000/MyQuest");
+  res.redirect("http://31.220.48.246:3000/MyQuest");
 };
 
 const getDiscordAuthUrl=async()=>{
- return 'https://discord.com/api/oauth2/authorize?client_id=1093225051781869668&redirect_uri=http%3A%2F%2Flocalhost%3A4000%2Fuser%2FdicordCallback&response_type=code&scope=identify%20guilds%20guilds.join%20connections%20guilds.members.read'
-}
+ return 'https://discord.com/api/oauth2/authorize?client_id=1093225051781869668&redirect_uri=http%3A%2F%2F31.220.48.246%3A4000%2Fuser%2FdicordCallback&response_type=code&scope=identify%20guilds%20guilds.join%20connections%20guilds.members.read'}
 
 const getServerJoinedStatus = async (userKey, invitationUrl) => {
   const key = userKey
