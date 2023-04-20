@@ -5,7 +5,7 @@ const { jwtExtractor } = require("../middlewares/jwt");
 
 const clientID = "1093225051781869668";
 const clientSecret = "dcPN59P2dj9hmHv4ABwGpgNBlJKlf28D";
-const redirectURI = "https://cryptotool.in/user/dicordCallback";
+const redirectURI = "http://31.220.48.246:4000/user/dicordCallback";
 
 const getUserKeyDiscord = async (req, res) => {
   console.log("callback recivied");
