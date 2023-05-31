@@ -25,7 +25,7 @@ const taskComplete = async (req, res) => {
     let questId = req.body.questId;
     console.log(req.body);
     let data = await QuestModel.find({ _id: questId });
-    // console.log(data);
+    console.log(data);
     console.log("ye task hai",task)
     const taskData = task.split("~");
     console.log("task data is",taskData);
@@ -33,6 +33,7 @@ const taskComplete = async (req, res) => {
     let platform = null;
     let platformSubTask=null
     let taskIndex = data[0].task.split("|").length;
+    console.log({taskIndex})
     let datafromloop;
     for (let index = 0; index < taskIndex; index++) {
       if (task == data[0].task.split("|")[index]) {
@@ -44,7 +45,7 @@ const taskComplete = async (req, res) => {
 
     if (datafromloop == undefined) {
       console.log("data comming is undefines")
-      return res.json("task not exist");
+      return res.json('task not exist');
     }
     console.log("testing phase 1", datafromloop)
   

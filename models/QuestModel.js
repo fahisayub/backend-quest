@@ -14,7 +14,7 @@ taskDetails:[
         platformLogo:{type:String,default:null},
         platformUrl:{type:String,default:null},
         platformId:{type:String,default:null},
-        platformXp:{type:Number,default:00},
+        platformXp:{type:Number,default:0o0},
         validationRequired:{type:Boolean,default:false}
     }
 ],
