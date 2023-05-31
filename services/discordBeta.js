@@ -5,7 +5,7 @@ const { jwtExtractor } = require("../middlewares/jwt");
 
 const clientID = "1093225051781869668";
 const clientSecret = "dcPN59P2dj9hmHv4ABwGpgNBlJKlf28D";
-const redirectURI = "http://31.220.48.246:4000/user/dicordCallback";
+const redirectURI = "https://questbackend.onrender.com/user/dicordCallback";
 
 const getUserKeyDiscord = async (req, res) => {
   console.log("callback recivied");
@@ -35,7 +35,7 @@ const getUserKeyDiscord = async (req, res) => {
   console.log(jwtData.id);
   const user = await membersModel.findByIdAndUpdate(jwtData.id,{$set:{discordAuth:{accessKey:accessToken,status:true}}});
   console.log("access token is ", accessToken);
-  res.redirect("http://31.220.48.246:3000/MyQuest");
+  res.redirect("https://questapp.netlify.app/MyQuest");
 };
 
 const getDiscordAuthUrl=async()=>{
