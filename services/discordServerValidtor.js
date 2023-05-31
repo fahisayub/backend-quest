@@ -9,7 +9,7 @@ passport.use(
   new DiscordStrategy({
     clientID: "YOUR_CLIENT_ID",
     clientSecret: "YOUR_CLIENT_SECRET",
-    callbackURL: "http://localhost:3000/auth/discord/callback",
+    callbackURL: "https://questapp.netlify.app/auth/discord/callback",
     scope: ['identify', 'guilds']
   },
   (accessToken, refreshToken, profile, done) => {

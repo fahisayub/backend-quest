@@ -35,7 +35,7 @@ const getUserKeyDiscord = async (req, res) => {
   console.log(jwtData.id);
   const user = await membersModel.findByIdAndUpdate(jwtData.id,{$set:{discordAuth:{accessKey:accessToken,status:true}}});
   console.log("access token is ", accessToken);
-  res.redirect(`${CONSTS.HOST_URL}/MyQuest`);
+  res.redirect("https://questapp.netlify.app/MyQuest");
 };
 
 const getDiscordAuthUrl=async()=>{
